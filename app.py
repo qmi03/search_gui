@@ -26,17 +26,19 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setMinimumSize(QSize(400, 300))
         self.setWindowTitle("Excel Lookup App")
-        button = QPushButton("Click to select folder")
-        button.clicked.connect(self.button_click_handler)
         self.selected_dir = ""
 
         layout = QVBoxLayout()
+
         label_select_dir = QLabel("Select dir here:")
+        layout.addWidget(label_select_dir)
+
+        button = QPushButton("Click to select folder")
+        button.clicked.connect(self.button_click_handler)
+        layout.addWidget(button)
+
         self.combobox_select_dir = QDirComboBox()
         self.combobox_select_dir.setEditable(True)
-
-        layout.addWidget(label_select_dir)
-        layout.addWidget(button)
         layout.addWidget(self.combobox_select_dir)
 
         widget = QWidget()
