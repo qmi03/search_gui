@@ -4,7 +4,8 @@ from random import choice
 from PySide6.QtCore import QFileSelector, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog, QLabel,
-                               QMainWindow, QPushButton, QVBoxLayout, QWidget)
+                               QLineEdit, QMainWindow, QPushButton,
+                               QVBoxLayout, QWidget)
 
 
 class QDirComboBox(QComboBox):
@@ -26,11 +27,12 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setMinimumSize(QSize(400, 300))
         self.setWindowTitle("Excel Lookup App")
-        self.selected_dir = ""
+        self.selected_dir: str = ""
+        self.searched_key: str = ""
 
         layout = QVBoxLayout()
 
-        label_select_dir = QLabel("Select dir here:")
+        label_select_dir = QLabel("Select or type directory here:")
         layout.addWidget(label_select_dir)
 
         button = QPushButton("Click to select folder")
@@ -40,6 +42,12 @@ class MainWindow(QMainWindow):
         self.combobox_select_dir = QDirComboBox()
         self.combobox_select_dir.setEditable(True)
         layout.addWidget(self.combobox_select_dir)
+
+        label_input_key = QLabel("Input search here:")
+        layout.addWidget(label_input_key)
+
+        self.search_box = QLineEdit()
+        layout.addWidget(self.search_box)
 
         widget = QWidget()
         widget.setLayout(layout)
