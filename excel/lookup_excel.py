@@ -53,6 +53,7 @@ class DirectoryExcel:
         self.__root_dir = os.path.abspath(root_directory)
         self.__recursive = recursive
         self.excel_files = []
+        self.find_excel_files()
 
     @property
     def root_dir(self):
@@ -60,7 +61,9 @@ class DirectoryExcel:
 
     @root_dir.setter
     def root_dir(self, new_root_dir):
+        self.excel_files = []
         self.__root_dir = os.path.abspath(new_root_dir)
+        self.find_excel_files()
 
     @property
     def recursive(self):
@@ -68,7 +71,9 @@ class DirectoryExcel:
 
     @recursive.setter
     def recursive(self, new_recursive_policy):
+        self.excel_files = []
         self.__recursive = new_recursive_policy
+        self.find_excel_files()
 
     def find_excel_files(self):
         extensions = [
@@ -101,8 +106,8 @@ class DirectoryExcel:
     def search_keyword(
         self, keyword: str, exact_match=False
     ) -> Generator[SearchResult, None, None]:
-        if keyword == "": return
-        self.find_excel_files()
+        if keyword == "":
+            return
         for excel_file in self.excel_files:
             try:
                 wb = openpyxl.load_workbook(excel_file, data_only=True)
