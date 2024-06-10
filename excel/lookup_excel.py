@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+from pathlib import Path
 from typing import Generator
 
 import openpyxl
@@ -43,11 +44,28 @@ class SearchResult:
 
 class DirectoryExcel:
 
-    def __init__(self, root_directory: str, recursive: bool = False) -> None:
-        self.root_dir = os.path.abspath(root_directory)
-        self.recursive = recursive
+    def __init__(
+        self, root_directory: str = str(Path.home()), recursive: bool = False
+    ) -> None:
+        self.__root_dir = os.path.abspath(root_directory)
+        self.__recursive = recursive
         self.excel_files = []
-        self.find_excel_files()
+
+    @property
+    def root_dir(self):
+        return self.__root_dir
+
+    @root_dir.setter
+    def root_dir(self, new_root_dir):
+        self.__root_dir = os.path.abspath(new_root_dir)
+
+    @property
+    def recursive(self):
+        return self.__recursive
+
+    @recursive.setter
+    def recursive(self, new_recursive_policy):
+        self.__recursive = new_recursive_policy
 
     def find_excel_files(self):
         extensions = [
@@ -63,17 +81,24 @@ class DirectoryExcel:
         ]
         for extension in extensions:
             files_found = []
-            if self.recursive:
-                search_pattern = os.path.join(self.root_dir, "**", extension)
+            if self.__recursive:
+                search_pattern = os.path.join(self.__root_dir, "**", extension)
                 files_found = glob.glob(search_pattern, recursive=True)
             else:
-                search_pattern = os.path.join(self.root_dir, extension)
+                search_pattern = os.path.join(self.__root_dir, extension)
                 files_found = glob.glob(search_pattern, recursive=False)
-            self.excel_files.extend([file for file in files_found if not os.path.basename(file).startswith('~$')])
+            self.excel_files.extend(
+                [
+                    file
+                    for file in files_found
+                    if not os.path.basename(file).startswith("~$")
+                ]
+            )
 
     def search_keyword(
         self, keyword: str, exact_match=False
     ) -> Generator[SearchResult, None, None]:
+        self.find_excel_files()
         for excel_file in self.excel_files:
             try:
                 wb = openpyxl.load_workbook(excel_file, data_only=True)
