@@ -6,31 +6,37 @@ from re import A
 import openpyxl
 
 
+class SearchResult:
+    def __init__(self, file, sheet, row, col, val, complete_val=None) -> None:
+        self.__file = file
+        self.__sheet = sheet
+        self.__row = row
+        self.__col = col
+        self.__val = val
+        self.__complete_val = complete_val
+
+    @property
+    def file(self):
+        return self.__file
+
+    @property
+    def sheet(self):
+        return self.__sheet
+
+    @property
+    def cell(self):
+        return self.__col + self.__row
+
+    @property
+    def value(self):
+        return self.__val
+
+    @property
+    def is_partial_match(self):
+        return self.__complete_val != None
+
+
 class DirectoryExcel:
-    class SearchResult:
-        def __init__(self,file,sheet,row,col,val) -> None:
-            self.file = file
-            self.sheet = sheet
-            self.row = row
-            self.col = col
-            self.val = val
-        def __str__(self):
-            return f"File: {self.file}, Sheet: {self.sheet}, Row: {self.row}, Column: {self.col}, Value: {self.val}"
-
-        def get_file(self):
-            return self.file
-
-        def get_sheet(self):
-            return self.sheet
-
-        def get_row(self):
-            return self.row
-
-        def get_column(self):
-            return self.col
-
-        def get_value(self):
-            return self.val
 
     def __init__(self, root_directory: str, recursive: bool = False) -> None:
         self.root_dir = os.path.abspath(root_directory)
@@ -57,9 +63,15 @@ class DirectoryExcel:
             else:
                 search_pattern = os.path.join(self.root_dir, extension)
                 self.excel_files.extend(glob.glob(search_pattern, recursive=False))
-    def search_keyword (self,keyword:str):
 
-
+    def search_keyword(self, keyword: str):
+        exact_match = []
+        partial_match = []
+        for excel_file in self.excel_files:
+            try:
+                wb = openpyxl.load_workbook(excel_file, data_only=True)
+            except Exception as e:
+                print(e)
 
 
 if __name__ == "__main__":
