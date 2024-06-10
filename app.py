@@ -1,11 +1,12 @@
 import sys
-from random import choice
 
 from PySide6.QtCore import QFileSelector, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
                                QHBoxLayout, QLabel, QLineEdit, QMainWindow,
                                QPushButton, QVBoxLayout, QWidget)
+
+from excel.lookup_excel import DirectoryExcel
 
 
 class QDirComboBox(QComboBox):
@@ -27,6 +28,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Excel Lookup App")
         self.searched_key: str = ""
+        self.dir_context = DirectoryExcel()
 
         layout = QVBoxLayout()
         dir_selector_layout = QHBoxLayout()
@@ -36,6 +38,7 @@ class MainWindow(QMainWindow):
 
         self.combobox_select_dir = QDirComboBox()
         self.combobox_select_dir.setEditable(True)
+        self.combobox_select_dir.currentTextChanged.connect(self.change_selected_dir)
         dir_selector_layout.addWidget(self.combobox_select_dir)
 
         button = QPushButton()
@@ -58,7 +61,12 @@ class MainWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+    def change_selected_dir(self, dir):
+        self.dir_context.root_dir = dir
+
     def text_edited(self, text):
+        for result in self.dir_context.search_keyword(text):
+            print(result)
 
     def dir_handler(self, dir):
         self.selected_dir = dir
