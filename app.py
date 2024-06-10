@@ -25,7 +25,6 @@ class QDirComboBox(QComboBox):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setMinimumSize(QSize(400, 300))
         self.setWindowTitle("Excel Lookup App")
         self.selected_dir: str = ""
         self.searched_key: str = ""
