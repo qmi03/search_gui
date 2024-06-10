@@ -3,8 +3,8 @@ import sys
 from PySide6.QtCore import QFileSelector, QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
-                               QHBoxLayout, QLabel, QLineEdit, QMainWindow,
-                               QPushButton, QVBoxLayout, QWidget)
+                               QHBoxLayout, QLabel, QLineEdit, QListWidget,
+                               QMainWindow, QPushButton, QVBoxLayout, QWidget)
 
 from excel.lookup_excel import DirectoryExcel
 
@@ -64,6 +64,10 @@ class MainWindow(QMainWindow):
         self.search_box.textEdited.connect(self.text_edited)
         layout.addWidget(self.search_box)
 
+        # Add a QListWidget to display search results
+        self.result_list = QListWidget()
+        layout.addWidget(self.result_list)
+
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
@@ -74,8 +78,10 @@ class MainWindow(QMainWindow):
 
     def text_edited(self, text):
         print(text)
+        self.result_list.clear()
         for result in self.dir_context.search_keyword(text):
             print(result)
+            self.result_list.addItem(str(result))
 
     def dir_handler(self, dir):
         self.selected_dir = dir
