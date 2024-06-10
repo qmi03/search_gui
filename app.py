@@ -3,9 +3,9 @@ from random import choice
 
 from PySide6.QtCore import QFileSelector, QSize
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog, QLabel,
-                               QLineEdit, QMainWindow, QPushButton,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
+                               QHBoxLayout, QLabel, QLineEdit, QMainWindow,
+                               QPushButton, QVBoxLayout, QWidget)
 
 
 class QDirComboBox(QComboBox):
@@ -26,31 +26,39 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Excel Lookup App")
-        self.selected_dir: str = ""
         self.searched_key: str = ""
 
         layout = QVBoxLayout()
+        dir_selector_layout = QHBoxLayout()
 
         label_select_dir = QLabel("Select or type directory here:")
         layout.addWidget(label_select_dir)
 
-        button = QPushButton("Click to select folder")
-        button.clicked.connect(self.button_click_handler)
-        layout.addWidget(button)
-
         self.combobox_select_dir = QDirComboBox()
         self.combobox_select_dir.setEditable(True)
-        layout.addWidget(self.combobox_select_dir)
+        dir_selector_layout.addWidget(self.combobox_select_dir)
+
+        button = QPushButton()
+        button.setIcon(QIcon("./public/dir_icon.png"))
+        button.setMaximumSize(32, 32)
+        button.clicked.connect(self.button_click_handler)
+        dir_selector_layout.addWidget(button)
+
+        layout.addLayout(dir_selector_layout)
 
         label_input_key = QLabel("Input search here:")
         layout.addWidget(label_input_key)
 
         self.search_box = QLineEdit()
+        self.search_box.setPlaceholderText("Enter search keys")
+        self.search_box.textEdited.connect(self.text_edited)
         layout.addWidget(self.search_box)
 
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+
+    def text_edited(self, text):
 
     def dir_handler(self, dir):
         self.selected_dir = dir
@@ -64,6 +72,9 @@ class MainWindow(QMainWindow):
         self.dir_selector.setFileMode(QFileDialog.FileMode.Directory)
         self.dir_selector.fileSelected.connect(self.dir_handler)
         self.dir_selector.exec()
+
+    def search_handler(self, dir):
+        pass
 
 
 app = QApplication(sys.argv)
