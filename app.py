@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
 
         self.combobox_select_dir = QDirComboBox()
         self.combobox_select_dir.setEditable(True)
-        self.combobox_select_dir.editingFinished.connect(self.change_selected_dir)
+        self.combobox_select_dir.editingFinished.connect(self.enter_dir)
         dir_selector_layout.addWidget(self.combobox_select_dir)
 
         button = QPushButton()
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
-    def change_selected_dir(self, dir):
+    def enter_dir(self, dir):
         self.dir_context.root_dir = dir
         self.combobox_select_dir.add_dir(dir)
 
