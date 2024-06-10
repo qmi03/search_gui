@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
     def dir_handler(self, dir):
         self.selected_dir = dir
         self.combobox_select_dir.add_dir(dir)
-
+        self.dir_context.root_dir = dir
         self.combobox_select_dir.setCurrentText(dir)
         print(dir)
 
