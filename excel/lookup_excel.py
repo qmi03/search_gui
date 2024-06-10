@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+from typing import Generator
 
 import openpyxl
 import openpyxl.utils
@@ -61,14 +62,18 @@ class DirectoryExcel:
             "*.ods",
         ]
         for extension in extensions:
+            files_found = []
             if self.recursive:
                 search_pattern = os.path.join(self.root_dir, "**", extension)
-                self.excel_files.extend(glob.glob(search_pattern, recursive=True))
+                files_found = glob.glob(search_pattern, recursive=True)
             else:
                 search_pattern = os.path.join(self.root_dir, extension)
-                self.excel_files.extend(glob.glob(search_pattern, recursive=False))
+                files_found = glob.glob(search_pattern, recursive=False)
+            self.excel_files.extend([file for file in files_found if not os.path.basename(file).startswith('~$')])
 
-    def search_keyword(self, keyword: str, exact_match=False):
+    def search_keyword(
+        self, keyword: str, exact_match=False
+    ) -> Generator[SearchResult, None, None]:
         for excel_file in self.excel_files:
             try:
                 wb = openpyxl.load_workbook(excel_file, data_only=True)
@@ -90,7 +95,7 @@ class DirectoryExcel:
                                     cell_value,
                                 )
             except Exception as e:
-                print(e)
+                print(f"Error opening {excel_file}: {e}")
 
 
 if __name__ == "__main__":
