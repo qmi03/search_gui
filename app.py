@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Excel Lookup App")
-        self.searched_key: str = ""
+        self.key_to_search: str = ""
         self.dir_context = DirectoryExcel()
 
         layout = QVBoxLayout()
@@ -75,20 +75,23 @@ class MainWindow(QMainWindow):
     def enter_dir(self, dir):
         self.dir_context.root_dir = dir
         self.combobox_select_dir.add_dir(dir)
+        self.search_and_update()
+
+    def search_and_update(self):
+        self.result_list.clear()
+        for result in self.dir_context.search_keyword(self.key_to_search):
+            self.result_list.addItem(str(result))
 
     def text_edited(self, text):
-        print(text)
-        self.result_list.clear()
-        for result in self.dir_context.search_keyword(text):
-            print(result)
-            self.result_list.addItem(str(result))
+        self.key_to_search = text
+        self.search_and_update()
 
     def dir_handler(self, dir):
         self.selected_dir = dir
         self.combobox_select_dir.add_dir(dir)
         self.dir_context.root_dir = dir
         self.combobox_select_dir.setCurrentText(dir)
-        print(dir)
+        self.search_and_update()
 
     def button_click_handler(self, checked):
         self.dir_selector = QFileDialog(self)
