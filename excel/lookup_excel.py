@@ -18,7 +18,7 @@ class SearchResult:
         self.__complete_val = complete_val if complete_val is not None else val
 
     def __str__(self):
-        return f"File: {self.file}, Sheet: {self.sheet}, Cell: {self.cell}, Key: {self.value}, Is Partial Match: {self.is_partial_match}, Found Value: {self.found_value}"
+        return f"Found \"{self.found_value}\" at cell {self.cell}, sheet {self.sheet}, {os.path.basename(self.file)}"
 
     @property
     def file(self):
