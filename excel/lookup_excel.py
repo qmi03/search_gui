@@ -15,7 +15,10 @@ class SearchResult:
         self.__row = row
         self.__col = openpyxl.utils.get_column_letter(col)
         self.__val = val
-        self.__complete_val = complete_val
+        self.__complete_val = complete_val if complete_val is not None else val
+
+    def __str__(self):
+        return f"File: {self.file}, Sheet: {self.sheet}, Cell: {self.cell}, Key: {self.value}, Is Partial Match: {self.is_partial_match}, Found Value: {self.found_value}"
 
     @property
     def file(self):
@@ -35,7 +38,7 @@ class SearchResult:
 
     @property
     def is_partial_match(self):
-        return self.__complete_val != None
+        return self.__complete_val != self.__val
 
     @property
     def found_value(self):
@@ -98,6 +101,7 @@ class DirectoryExcel:
     def search_keyword(
         self, keyword: str, exact_match=False
     ) -> Generator[SearchResult, None, None]:
+        if keyword == "": return
         self.find_excel_files()
         for excel_file in self.excel_files:
             try:
