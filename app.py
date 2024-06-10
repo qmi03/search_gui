@@ -1,7 +1,7 @@
 import sys
 
-from PySide6.QtCore import QFileSelector, QSize
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import QFileSelector, QSize, Qt, Signal
+from PySide6.QtGui import QIcon, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
                                QHBoxLayout, QLabel, QLineEdit, QMainWindow,
                                QPushButton, QVBoxLayout, QWidget)
@@ -10,10 +10,12 @@ from excel.lookup_excel import DirectoryExcel
 
 
 class QDirComboBox(QComboBox):
+    editingFinished = Signal(str)
+
     def __init__(self):
         self.folder_list = set()
         super().__init__()
-        self.setInsertPolicy(QComboBox.InsertPolicy.InsertAtTop)
+        self.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
 
     def add_dir(self, dir_path):
         if dir_path in self.folder_list:
@@ -21,6 +23,11 @@ class QDirComboBox(QComboBox):
         else:
             self.folder_list.add(dir_path)
             self.addItem(dir_path)
+
+    def keyPressEvent(self, e: QKeyEvent) -> None:
+        if e.key() in [Qt.Key_Return, Qt.Key_Enter]:
+            self.editingFinished.emit(self.currentText())
+        super().keyPressEvent(e)
 
 
 class MainWindow(QMainWindow):
@@ -38,7 +45,7 @@ class MainWindow(QMainWindow):
 
         self.combobox_select_dir = QDirComboBox()
         self.combobox_select_dir.setEditable(True)
-        self.combobox_select_dir.currentTextChanged.connect(self.change_selected_dir)
+        self.combobox_select_dir.editingFinished.connect(self.change_selected_dir)
         dir_selector_layout.addWidget(self.combobox_select_dir)
 
         button = QPushButton()
@@ -63,8 +70,10 @@ class MainWindow(QMainWindow):
 
     def change_selected_dir(self, dir):
         self.dir_context.root_dir = dir
+        self.combobox_select_dir.add_dir(dir)
 
     def text_edited(self, text):
+        print(text)
         for result in self.dir_context.search_keyword(text):
             print(result)
 
