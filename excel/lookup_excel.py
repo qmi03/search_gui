@@ -1,9 +1,9 @@
 import glob
 import os
 import sys
-from re import A
 
 import openpyxl
+import openpyxl.utils
 
 
 class SearchResult:
@@ -11,7 +11,7 @@ class SearchResult:
         self.__file = file
         self.__sheet = sheet
         self.__row = row
-        self.__col = col
+        self.__col = openpyxl.utils.get_column_letter(col)
         self.__val = val
         self.__complete_val = complete_val
 
@@ -25,7 +25,7 @@ class SearchResult:
 
     @property
     def cell(self):
-        return self.__col + self.__row
+        return self.__col + str(self.__row)
 
     @property
     def value(self):
@@ -34,6 +34,10 @@ class SearchResult:
     @property
     def is_partial_match(self):
         return self.__complete_val != None
+
+    @property
+    def found_value(self):
+        return self.__complete_val
 
 
 class DirectoryExcel:
@@ -64,12 +68,27 @@ class DirectoryExcel:
                 search_pattern = os.path.join(self.root_dir, extension)
                 self.excel_files.extend(glob.glob(search_pattern, recursive=False))
 
-    def search_keyword(self, keyword: str):
-        exact_match = []
-        partial_match = []
+    def search_keyword(self, keyword: str, exact_match=False):
         for excel_file in self.excel_files:
             try:
                 wb = openpyxl.load_workbook(excel_file, data_only=True)
+                for ws in wb.worksheets:
+                    for col in ws.iter_cols():
+                        for cell in col:
+                            cell_value = str(cell.value)
+                            if keyword == cell_value:
+                                yield SearchResult(
+                                    excel_file, ws.title, cell.row, cell.column, keyword
+                                )
+                            elif not exact_match and keyword in cell_value:
+                                yield SearchResult(
+                                    excel_file,
+                                    ws.title,
+                                    cell.row,
+                                    cell.column,
+                                    keyword,
+                                    cell_value,
+                                )
             except Exception as e:
                 print(e)
 
