@@ -3,9 +3,9 @@ import os
 import sys
 from pathlib import Path
 
-import openpyxl
-import openpyxl.utils
 import pandas as pd
+
+from excel.utils import get_col_letter
 
 
 class SearchResult:
@@ -13,7 +13,7 @@ class SearchResult:
         self.__file = file
         self.__sheet = sheet
         self.__row = row
-        self.__col = openpyxl.utils.get_column_letter(col)
+        self.__col = get_col_letter(col)
         self.__val = val
         self.__complete_val = complete_val if complete_val is not None else val
 
