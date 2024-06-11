@@ -1,5 +1,4 @@
 import glob
-import os
 import sys
 from pathlib import Path
 
@@ -18,7 +17,7 @@ class SearchResult:
         self.__complete_val = complete_val if complete_val is not None else val
 
     def __str__(self):
-        return f'Found "{self.found_value}" at cell {self.cell}, sheet {self.sheet}, {os.path.basename(self.file)}'
+        return f'Found "{self.found_value}" at cell {self.cell}, sheet {self.sheet}, {Path(self.file).name}'
 
     @property
     def file(self):
@@ -50,7 +49,7 @@ class DirectoryExcel:
     def __init__(
         self, root_directory: str = str(Path.home()), recursive: bool = False
     ) -> None:
-        self.__root_dir = os.path.abspath(root_directory)
+        self.__root_dir = Path(root_directory).resolve()
         self.__recursive = recursive
         self.excel_files = []
         self.find_excel_files()
@@ -62,7 +61,7 @@ class DirectoryExcel:
     @root_dir.setter
     def root_dir(self, new_root_dir):
         self.excel_files = []
-        self.__root_dir = os.path.abspath(new_root_dir)
+        self.__root_dir = Path(new_root_dir).resolve()
         self.find_excel_files()
 
     @property
@@ -90,17 +89,13 @@ class DirectoryExcel:
         for extension in extensions:
             files_found = []
             if self.__recursive:
-                search_pattern = os.path.join(self.__root_dir, "**", extension)
+                search_pattern = str(self.__root_dir / "**" / extension)
                 files_found = glob.glob(search_pattern, recursive=True)
             else:
-                search_pattern = os.path.join(self.__root_dir, extension)
+                search_pattern = str(self.__root_dir / extension)
                 files_found = glob.glob(search_pattern, recursive=False)
             self.excel_files.extend(
-                [
-                    file
-                    for file in files_found
-                    if not os.path.basename(file).startswith("~$")
-                ]
+                [file for file in files_found if not Path(file).name.startswith("~$")]
             )
 
     def search_keyword(self, keyword, exact_match=False):

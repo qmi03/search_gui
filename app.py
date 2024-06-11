@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 
 import xlwings as xw
 from PySide6.QtCore import Qt, Signal
@@ -11,9 +11,12 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
 
 from excel.lookup_excel import DirectoryExcel, SearchResult
 
+basedir = Path(__file__).parent
+
 
 def open_file(item: SearchResult):
-    wb = xw.Book(os.path.abspath(item.file))
+    file_path = Path(item.file).resolve()
+    wb = xw.Book(str(file_path))
 
     ws = wb.sheets[item.sheet]
 
@@ -31,6 +34,7 @@ class QDirComboBox(QComboBox):
         self.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
 
     def add_dir(self, dir_path):
+        dir_path = str(Path(dir_path).resolve())
         if dir_path in self.folder_list:
             return
         else:
@@ -62,7 +66,7 @@ class MainWindow(QMainWindow):
         dir_selector_layout.addWidget(self.combobox_select_dir)
 
         button = QPushButton()
-        button.setIcon(QIcon("./public/dir_icon.png"))
+        button.setIcon(QIcon(str(basedir / "public/dir_icon.png")))
         button.setMaximumSize(32, 32)
         button.clicked.connect(self.button_click_handler)
         dir_selector_layout.addWidget(button)
@@ -87,6 +91,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def enter_dir(self, dir):
+        dir = str(Path(dir).resolve())
         self.dir_context.root_dir = dir
         self.combobox_select_dir.add_dir(dir)
         self.search_and_update()
@@ -105,6 +110,7 @@ class MainWindow(QMainWindow):
         self.search_and_update()
 
     def dir_handler(self, dir):
+        dir = str(Path(dir).resolve())
         self.selected_dir = dir
         self.combobox_select_dir.add_dir(dir)
         self.dir_context.root_dir = dir
