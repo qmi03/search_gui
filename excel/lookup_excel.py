@@ -8,6 +8,8 @@ from typing import Generator
 import openpyxl
 import openpyxl.utils
 
+from excel.utils import is_openpyxl_compatible
+
 
 class SearchResult:
     def __init__(self, file, sheet, row, col, val, complete_val=None) -> None:
@@ -107,8 +109,8 @@ class DirectoryExcel:
     def search_result_generator(
         self, excel_file, keyword, exact_match=False
     ) -> Generator[SearchResult, None, None]:
-        _, file_extension = os.path.splitext(excel_file)
-        if file_extension in ["*.xlsx", "*.xlsm", "*.xltx", "*.xltm"]:
+        
+        if is_openpyxl_compatible(excel_file):
             wb = openpyxl.load_workbook(excel_file, data_only=True)
             for ws in wb.worksheets:
                 for col in ws.iter_cols():
@@ -127,7 +129,6 @@ class DirectoryExcel:
                                 keyword,
                                 cell_value,
                             )
-        else:
 
 
     def search_keyword(
