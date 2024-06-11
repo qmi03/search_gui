@@ -1,12 +1,28 @@
+import os
+import platform
+import subprocess
 import sys
 
 from PySide6.QtCore import QFileSelector, QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
                                QHBoxLayout, QLabel, QLineEdit, QListWidget,
-                               QMainWindow, QPushButton, QVBoxLayout, QWidget)
+                               QListWidgetItem, QMainWindow, QPushButton,
+                               QVBoxLayout, QWidget)
 
 from excel.lookup_excel import DirectoryExcel
+
+
+def open_file(file_path):
+    if os.path.exists(file_path):
+        if platform.system() == "Windows":
+            os.startfile(file_path)
+        elif platform.system() == "Darwin":
+            subprocess.call(["open", file_path])
+        else:
+            subprocess.call(["xdg-open", file_path])
+    else:
+        print(f"File does not exist: {file_path}")
 
 
 class QDirComboBox(QComboBox):
@@ -66,6 +82,7 @@ class MainWindow(QMainWindow):
 
         # Add a QListWidget to display search results
         self.result_list = QListWidget()
+        self.result_list.itemDoubleClicked.connect(self.item_clicked_handler)
         layout.addWidget(self.result_list)
 
         widget = QWidget()
@@ -80,7 +97,9 @@ class MainWindow(QMainWindow):
     def search_and_update(self):
         self.result_list.clear()
         for result in self.dir_context.search_keyword(self.key_to_search):
-            self.result_list.addItem(str(result))
+            item = QListWidgetItem(str(result))
+            item.setData(Qt.UserRole, result.file)
+            self.result_list.addItem(item)
 
     def text_edited(self, text):
         self.key_to_search = text
@@ -99,8 +118,10 @@ class MainWindow(QMainWindow):
         self.dir_selector.fileSelected.connect(self.dir_handler)
         self.dir_selector.exec()
 
-    def search_handler(self, dir):
-        pass
+    def item_clicked_handler(self, item):
+        file_path = item.data(Qt.UserRole)
+        print(file_path)
+        open_file(file_path)
 
 
 app = QApplication(sys.argv)
