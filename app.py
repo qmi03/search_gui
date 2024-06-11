@@ -3,6 +3,7 @@ import platform
 import subprocess
 import sys
 
+import xlwings as xw
 from PySide6.QtCore import QFileSelector, QSize, Qt, Signal
 from PySide6.QtGui import QIcon, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
@@ -10,19 +11,17 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
                                QListWidgetItem, QMainWindow, QPushButton,
                                QVBoxLayout, QWidget)
 
-from excel.lookup_excel import DirectoryExcel
+from excel.lookup_excel import DirectoryExcel, SearchResult
 
 
-def open_file(file_path):
-    if os.path.exists(file_path):
-        if platform.system() == "Windows":
-            os.startfile(file_path)
-        elif platform.system() == "Darwin":
-            subprocess.call(["open", file_path])
-        else:
-            subprocess.call(["xdg-open", file_path])
-    else:
-        print(f"File does not exist: {file_path}")
+def open_file(item: SearchResult):
+    wb = xw.Book(os.path.abspath(item.file))
+
+    ws = wb.sheets[item.sheet]
+
+    ws.activate()
+    ws.range(item.cell).select()
+    wb.app.activate(steal_focus=True)
 
 
 class QDirComboBox(QComboBox):
@@ -77,7 +76,7 @@ class MainWindow(QMainWindow):
 
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("Enter search keys")
-        self.search_box.textEdited.connect(self.text_edited)
+        self.search_box.editingFinished.connect(self.text_edited)
         layout.addWidget(self.search_box)
 
         # Add a QListWidget to display search results
@@ -97,12 +96,14 @@ class MainWindow(QMainWindow):
     def search_and_update(self):
         self.result_list.clear()
         for result in self.dir_context.search_keyword(self.key_to_search):
+            print(result)
             item = QListWidgetItem(str(result))
-            item.setData(Qt.UserRole, result.file)
+            item.setData(Qt.UserRole, result)
             self.result_list.addItem(item)
 
-    def text_edited(self, text):
-        self.key_to_search = text
+    def text_edited(self):
+        self.key_to_search = self.search_box.text()
+        print(self.key_to_search)
         self.search_and_update()
 
     def dir_handler(self, dir):
@@ -119,9 +120,7 @@ class MainWindow(QMainWindow):
         self.dir_selector.exec()
 
     def item_clicked_handler(self, item):
-        file_path = item.data(Qt.UserRole)
-        print(file_path)
-        open_file(file_path)
+        open_file(item.data(Qt.UserRole))
 
 
 app = QApplication(sys.argv)
