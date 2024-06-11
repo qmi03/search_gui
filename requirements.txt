@@ -1,0 +1,7 @@
+pandas
+xlwings
+PySide6
+openpyxl
+xlrd
+pyxlsb
+
