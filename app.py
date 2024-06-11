@@ -1,10 +1,8 @@
 import os
-import platform
-import subprocess
 import sys
 
 import xlwings as xw
-from PySide6.QtCore import QFileSelector, QSize, Qt, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
                                QHBoxLayout, QLabel, QLineEdit, QListWidget,
