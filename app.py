@@ -6,8 +6,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon, QKeyEvent
 from PySide6.QtWidgets import (QApplication, QComboBox, QFileDialog,
                                QHBoxLayout, QLabel, QLineEdit, QListWidget,
-                               QListWidgetItem, QMainWindow, QPushButton,
-                               QVBoxLayout, QWidget)
+                               QListWidgetItem, QMainWindow, QMessageBox,
+                               QPushButton, QVBoxLayout, QWidget)
 
 from excel.lookup_excel import DirectoryExcel, SearchResult
 
@@ -104,10 +104,17 @@ class MainWindow(QMainWindow):
             item.setData(Qt.UserRole, result)
             self.result_list.addItem(item)
 
+    def notify_if_no_results(self):
+        if self.result_list.count() == 0:
+            QMessageBox.information(
+                self.result_list, "No Results", "No results were found."
+            )
+
     def text_edited(self):
         self.key_to_search = self.search_box.text()
         print(self.key_to_search)
         self.search_and_update()
+        self.notify_if_no_results()
 
     def dir_handler(self, dir):
         dir = str(Path(dir).resolve())
