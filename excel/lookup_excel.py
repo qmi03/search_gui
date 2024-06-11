@@ -2,13 +2,10 @@ import glob
 import os
 import sys
 from pathlib import Path
-from re import search
-from typing import Generator
 
 import openpyxl
 import openpyxl.utils
-
-from excel.utils import is_openpyxl_compatible
+import pandas as pd
 
 
 class SearchResult:
@@ -106,43 +103,31 @@ class DirectoryExcel:
                 ]
             )
 
-    def search_result_generator(
-        self, excel_file, keyword, exact_match=False
-    ) -> Generator[SearchResult, None, None]:
-        
-        if is_openpyxl_compatible(excel_file):
-            wb = openpyxl.load_workbook(excel_file, data_only=True)
-            for ws in wb.worksheets:
-                for col in ws.iter_cols():
-                    for cell in col:
-                        cell_value = str(cell.value)
-                        if keyword == cell_value:
-                            yield SearchResult(
-                                excel_file, ws.title, cell.row, cell.column, keyword
-                            )
-                        elif not exact_match and keyword in cell_value:
-                            yield SearchResult(
-                                excel_file,
-                                ws.title,
-                                cell.row,
-                                cell.column,
-                                keyword,
-                                cell_value,
-                            )
-
-
-    def search_keyword(
-        self, keyword: str, exact_match=False
-    ) -> Generator[SearchResult, None, None]:
+    def search_keyword(self, keyword, exact_match=False):
         if keyword == "":
             return
         for excel_file in self.excel_files:
             try:
-                yield from self.search_result_generator(
-                    excel_file, keyword, exact_match
-                )
+                wb = pd.read_excel(excel_file, sheet_name=None)
+                for sheet_name in list(wb.keys()):
+                    ws = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
+                    for col in ws:
+                        rows = []
+                        if ws[col].astype(str).str.contains(keyword).any():
+                            rows = ws[
+                                ws[col].astype(str).str.contains(keyword)
+                            ].index.tolist()
+                        for row in rows:
+                            yield SearchResult(
+                                excel_file,
+                                sheet_name,
+                                row + 1,
+                                col + 1,
+                                keyword,
+                                ws.loc[row, col],
+                            )
             except Exception as e:
-                print(f"Error opening {excel_file}: {e}")
+                print(f"Error with {excel_file}: {e}")
 
 
 if __name__ == "__main__":
