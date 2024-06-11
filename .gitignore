@@ -2,3 +2,6 @@
 Sample\ Data/*
 *.xlsx
 *.xlsm
+__pycache__/
+build/
+dist/
