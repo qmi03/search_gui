@@ -2,6 +2,7 @@ import glob
 import os
 import sys
 from pathlib import Path
+from re import search
 from typing import Generator
 
 import openpyxl
@@ -18,7 +19,7 @@ class SearchResult:
         self.__complete_val = complete_val if complete_val is not None else val
 
     def __str__(self):
-        return f"Found \"{self.found_value}\" at cell {self.cell}, sheet {self.sheet}, {os.path.basename(self.file)}"
+        return f'Found "{self.found_value}" at cell {self.cell}, sheet {self.sheet}, {os.path.basename(self.file)}'
 
     @property
     def file(self):
@@ -78,11 +79,11 @@ class DirectoryExcel:
     def find_excel_files(self):
         extensions = [
             "*.xlsx",
-            "*.xls",
             "*.xlsm",
-            "*.xlsb",
             "*.xltx",
             "*.xltm",
+            "*.xls",
+            "*.xlsb",
             "*.xlt",
             "*.xml",
             "*.ods",
@@ -103,6 +104,32 @@ class DirectoryExcel:
                 ]
             )
 
+    def search_result_generator(
+        self, excel_file, keyword, exact_match=False
+    ) -> Generator[SearchResult, None, None]:
+        _, file_extension = os.path.splitext(excel_file)
+        if file_extension in ["*.xlsx", "*.xlsm", "*.xltx", "*.xltm"]:
+            wb = openpyxl.load_workbook(excel_file, data_only=True)
+            for ws in wb.worksheets:
+                for col in ws.iter_cols():
+                    for cell in col:
+                        cell_value = str(cell.value)
+                        if keyword == cell_value:
+                            yield SearchResult(
+                                excel_file, ws.title, cell.row, cell.column, keyword
+                            )
+                        elif not exact_match and keyword in cell_value:
+                            yield SearchResult(
+                                excel_file,
+                                ws.title,
+                                cell.row,
+                                cell.column,
+                                keyword,
+                                cell_value,
+                            )
+        else:
+
+
     def search_keyword(
         self, keyword: str, exact_match=False
     ) -> Generator[SearchResult, None, None]:
@@ -110,24 +137,9 @@ class DirectoryExcel:
             return
         for excel_file in self.excel_files:
             try:
-                wb = openpyxl.load_workbook(excel_file, data_only=True)
-                for ws in wb.worksheets:
-                    for col in ws.iter_cols():
-                        for cell in col:
-                            cell_value = str(cell.value)
-                            if keyword == cell_value:
-                                yield SearchResult(
-                                    excel_file, ws.title, cell.row, cell.column, keyword
-                                )
-                            elif not exact_match and keyword in cell_value:
-                                yield SearchResult(
-                                    excel_file,
-                                    ws.title,
-                                    cell.row,
-                                    cell.column,
-                                    keyword,
-                                    cell_value,
-                                )
+                yield from self.search_result_generator(
+                    excel_file, keyword, exact_match
+                )
             except Exception as e:
                 print(f"Error opening {excel_file}: {e}")
 
