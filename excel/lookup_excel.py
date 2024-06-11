@@ -98,7 +98,9 @@ class DirectoryExcel:
                 [file for file in files_found if not Path(file).name.startswith("~$")]
             )
 
-    def search_keyword(self, keyword, exact_match=False):
+    def search_keyword(
+        self, keyword, exact_match=False, is_case_sensitive: bool = False
+    ):
         if keyword == "":
             return
         for excel_file in self.excel_files:
@@ -108,9 +110,16 @@ class DirectoryExcel:
                     ws = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
                     for col in ws:
                         rows = []
-                        if ws[col].astype(str).str.contains(keyword).any():
+                        if (
+                            ws[col]
+                            .astype(str)
+                            .str.contains(keyword, case=is_case_sensitive)
+                            .any()
+                        ):
                             rows = ws[
-                                ws[col].astype(str).str.contains(keyword)
+                                ws[col]
+                                .astype(str)
+                                .str.contains(keyword, case=is_case_sensitive)
                             ].index.tolist()
                         for row in rows:
                             yield SearchResult(
