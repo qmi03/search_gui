@@ -85,6 +85,7 @@ class DirectoryExcel:
             "*.xlt",
             "*.xml",
             "*.ods",
+            "*.odt",
         ]
         for extension in extensions:
             files_found = []
@@ -105,10 +106,22 @@ class DirectoryExcel:
             return
         for excel_file in self.excel_files:
             try:
-                wb = pd.read_excel(excel_file, sheet_name=None)
-                for sheet_name,ws in wb.items():
-                    ws = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
+                wb = {}
+                if Path(excel_file).suffix in [
+                    ".xls",
+                    ".xlsx",
+                    ".xlsm",
+                    ".xlsb",
+                    ".odf",
+                    ".ods",
+                    ".odt",
+                ]:
+                    wb = pd.read_excel(excel_file, sheet_name=None,header=None)
+                for sheet_name, ws in wb.items():
+                    print(sheet_name)
+                    print(ws)
                     for col in ws:
+                        print(col)
                         rows = []
                         if (
                             ws[col]
