@@ -106,7 +106,7 @@ class DirectoryExcel:
         for excel_file in self.excel_files:
             try:
                 wb = pd.read_excel(excel_file, sheet_name=None)
-                for sheet_name in list(wb.keys()):
+                for sheet_name,ws in wb.items():
                     ws = pd.read_excel(excel_file, sheet_name=sheet_name, header=None)
                     for col in ws:
                         rows = []
